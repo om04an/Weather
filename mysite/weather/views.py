@@ -4,12 +4,17 @@ import json
 import requests
 
 
-def home(request):
-    date_weather = _getting_weather_data_from_api(_ip())
+def get_city_name(request, city_name):
+    date_weather = _getting_weather_data_from_api(city_name)
     return render(request, 'weather/home.html', {'date': date_weather})
 
 
-def _ip():
+def home(request):
+    date_weather = _getting_weather_data_from_api(_getting_city_by_ip())
+    return render(request, 'weather/home.html', {'date': date_weather})
+
+
+def _getting_city_by_ip():
     url = 'http://ip-api.com/json/'
 
     ip_api = requests.get(url).text
