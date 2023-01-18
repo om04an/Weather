@@ -8,6 +8,11 @@
     <title>Weather</title>
 </head>
 <body>
+    <form action="city/">
+        <input type="text" name="city">
+        <button>Search</button>
+    </form>
+
     <h1>Weather</h1>
     {% for line in date %}
         <div>{{ line }}</div>
