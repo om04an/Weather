@@ -4,26 +4,29 @@ import json
 import requests
 
 
-def get_city_name(request):
-    city_name = request.GET.get("city")
-    date_weather = _getting_weather_data_from_api(city_name)
-    return render(request, 'weather/home.html', {'date': date_weather})
-
-
 def home(request):
-    date_weather = _getting_weather_data_from_api(_getting_city_by_ip())
-    return render(request, 'weather/home.html', {'date': date_weather})
+    city_name = _get_city_name(request)
+    data_weather = _get_weather_data_from_api(city_name)
+    return render(request, 'weather/home.html', {'data': data_weather})
 
 
-def _getting_city_by_ip():
+def _get_city_name(request):
+    if request.GET.get("city"):
+        city_name = request.GET.get("city")
+    else:
+        city_name = _get_user_city_by_ip()
+    return city_name
+
+
+def _get_user_city_by_ip():
     url = 'http://ip-api.com/json/'
 
     ip_api = requests.get(url).text
-    date = json.loads(ip_api)
-    return date['city']
+    ip_data = json.loads(ip_api)
+    return ip_data['city']
 
 
-def _getting_weather_data_from_api(city):
+def _get_weather_data_from_api(city):
     api_key = settings.API_KEY
     url = f'http://api.weatherapi.com/v1/current.json?key={api_key}&q={city}'
 
@@ -36,5 +39,4 @@ def _getting_weather_data_from_api(city):
                  f'Precipitation --> {data["current"]["condition"]["text"]}',
                  f'Wind --> {int(data["current"]["wind_kph"] * ( 5 / 18))} m/s',
                  f'Cloudiness --> {data["current"]["cloud"]} %']
-
     return list_info
