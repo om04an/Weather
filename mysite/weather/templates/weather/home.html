@@ -8,14 +8,14 @@
     <title>Weather</title>
 </head>
 <body>
-    <form action="city/">
+    <form>
         <input type="text" name="city">
         <button>Search</button>
     </form>
 
     <h1>Weather</h1>
-    {% for line in date %}
-        <div>{{ line }}</div>
+    {% for item in data %}
+        <div>{{ item }}</div>
     {% endfor %}
 </body>
 </html>
