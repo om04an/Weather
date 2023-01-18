@@ -4,7 +4,8 @@ import json
 import requests
 
 
-def get_city_name(request, city_name):
+def get_city_name(request):
+    city_name = request.GET.get("city")
     date_weather = _getting_weather_data_from_api(city_name)
     return render(request, 'weather/home.html', {'date': date_weather})
 
