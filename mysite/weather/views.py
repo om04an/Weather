@@ -1,87 +1,110 @@
 from django.conf import settings
 from django.shortcuts import render
-from .serializers import WeatherSerializer
+from django.core.serializers import serialize
 from .models import City
 import json
+from django.http import JsonResponse
 import requests
 
 
 def home(request):
-    data_weather = json.loads(combined_api(request))
-    return render(request, 'weather/home.html', {'data': data_weather.values})
+    _update_or_create_data_db(request)
+    city_and_weather_data = _data_of_all_api(request)
+    return render(request, 'weather/home.html', {'data': city_and_weather_data})
 
 
-def _get_city_name(request):
+def _get_name_city(request):
     if request.GET.get("city"):
-        city_name = request.GET.get("city")
+        city_name = request.GET.get("city")  # Getting the name of the city from the request
     else:
-        city_name = _get_user_city_by_ip()
+        city_name = _get_name_city_by_ip()  # Getting city name by ip
     return city_name
 
 
-def _get_user_city_by_ip():
+def _get_name_city_by_ip():
     url = 'http://ip-api.com/json/'
+    response = requests.get(url).text
+    print(json.loads(response))
+    city_name = json.loads(response)['city']
 
-    ip_api = requests.get(url).text
-    ip_data = json.loads(ip_api)
-    return ip_data['city']
+    return city_name
 
 
-def _get_weather_data_from_api(city):
+def _get_weather_data(city):
     api_key = settings.API_KEY
     url = f'http://api.weatherapi.com/v1/current.json?key={api_key}&q={city}'
 
-    weather_api = requests.get(url).text
-    data = json.loads(weather_api)
+    response = requests.get(url).text
+    data = json.loads(response)
 
-    list_info = [data["location"]["name"],
-                 int(data["current"]["temp_c"]),
-                 int(data["current"]["feelslike_c"]),
-                 data["current"]["condition"]["text"],
-                 int(data["current"]["wind_kph"] * (5 / 18)),
-                 data["current"]["cloud"]
-                 ]
-    return list_info
+    weather_information = [data["location"]["name"],  # Selective storage of received information
+                           int(data["current"]["temp_c"]),
+                           int(data["current"]["feelslike_c"]),
+                           data["current"]["condition"]["text"],
+                           int(data["current"]["wind_kph"] * (5 / 18)),
+                           data["current"]["cloud"]
+                           ]
+
+    return weather_information
 
 
-def _edit_data_db(all_data_weather):
-    post = City.objects.get(city=all_data_weather[0])
-    post.temperature = all_data_weather[1]
-    post.temperature_feelslike = all_data_weather[2]
-    post.precipitation = all_data_weather[3]
-    post.wind = all_data_weather[4]
-    post.cloudiness = all_data_weather[5]
+def _get_city_population(city):
+    api_key = settings.API_KEY_2
+    url = f'https://api.api-ninjas.com/v1/city?name={city}'
+    response = requests.get(url, headers={'X-Api-Key': api_key}).text
+    city_population = str(json.loads(response)[0]['population'])
+
+    return city_population
+
+
+def _edit_data_db(data):
+    post = City.objects.get(city=data[0])
+    post.temperature = data[1]
+    post.temperature_feelslike = data[2]
+    post.precipitation = data[3]
+    post.wind = data[4]
+    post.cloudiness = data[5]
+    post.population = data[6]
     post.save()
 
 
-def _create_data_db(all_data_weather):
-    City.objects.create(city=all_data_weather[0],
-                        temperature=all_data_weather[1],
-                        temperature_feelslike=all_data_weather[2],
-                        precipitation=all_data_weather[3],
-                        wind=all_data_weather[4],
-                        cloudiness=all_data_weather[5]
+def _create_data_db(data):
+    City.objects.create(city=data[0],
+                        temperature=data[1],
+                        temperature_feelslike=data[2],
+                        precipitation=data[3],
+                        wind=data[4],
+                        cloudiness=data[5],
+                        population=data[6]
                         )
 
 
+def _data_of_all_api(request):
+    city_name = _get_name_city(request)
+    weather_data = _get_weather_data(city_name)  # Getting weather data
+    weather_data.append(_get_city_population(weather_data[0]))  # Data aggregation
+
+    return weather_data
+
+
 def _update_or_create_data_db(request):
-    city = _get_city_name(request)
-    all_data_weather = _get_weather_data_from_api(city)
-    data_weather = City.objects.filter(city=all_data_weather[0])
+    city_and_weather_data = _data_of_all_api(request)
 
-    if data_weather:
-        _edit_data_db(all_data_weather)
+    if City.objects.filter(city=city_and_weather_data[0]):
+        _edit_data_db(city_and_weather_data)  # Updating data in the database
     else:
-        _create_data_db(all_data_weather)
+        _create_data_db(city_and_weather_data)  # Creating data in the database
 
 
-def combined_api(request):
-    _update_or_create_data_db(request)
-    city = _get_city_name(request)
-    all_data_weather = _get_weather_data_from_api(city)
+def get(request):  # API
+    city = _get_name_city(request)
+    city_name = _get_weather_data(city)[0]
 
-    data_weather = City.objects.filter(city=all_data_weather[0])
+    weather_data = City.objects.filter(city=city_name)
+    weather_serialized_data = serialize('python', weather_data)
 
-    serializer = WeatherSerializer(data_weather, many=True)
-    data = json.dumps([dict(i) for i in serializer.data][0])
-    return data
+    data = {
+        'weather': weather_serialized_data
+    }
+
+    return JsonResponse(data)
