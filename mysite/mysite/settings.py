@@ -21,6 +21,8 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = 'django-insecure-f9g*)sv#&zyo%%553b0po#d1&x_ojw(4u(lflibvd3gel2(m$j'
+API_KEY = 'b25c73ae43774b55a60183532231701'  # Weather API
+API_KEY_2 = 'JASJGXv6QGaH0AdoI5g4Eg==0AuKS4pX1qlWenzA'  # City information API
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
@@ -39,7 +41,6 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
 
     'weather',
-    'rest_framework',
 ]
 
 MIDDLEWARE = [
@@ -72,7 +73,6 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'mysite.wsgi.application'
 
-API_KEY = 'b25c73ae43774b55a60183532231701'
 
 # Database
 # https://docs.djangoproject.com/en/4.1/ref/settings/#databases

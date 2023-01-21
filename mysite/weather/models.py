@@ -8,6 +8,7 @@ class City(models.Model):
     precipitation = models.CharField(max_length=200)
     wind = models.CharField(max_length=200)
     cloudiness = models.CharField(max_length=200)
+    population = models.CharField(max_length=200)
 
     class Meta:
         verbose_name = "Town"
