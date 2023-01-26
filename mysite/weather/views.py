@@ -1,3 +1,4 @@
+from datetime import datetime
 from django.conf import settings
 from django.shortcuts import render
 from django.core.serializers import serialize
@@ -10,7 +11,15 @@ import requests
 def home(request):
     _update_or_create_data_db(request)
     city_and_weather_data = _data_of_all_api(request)
-    return render(request, 'weather/home.html', {'data': city_and_weather_data})
+    return render(request, 'weather/home.html', {'name': city_and_weather_data[0],
+                                                 'temperature': city_and_weather_data[1],
+                                                 'temperature_feelslike': city_and_weather_data[2],
+                                                 'precipitation': city_and_weather_data[3],
+                                                 'wind': city_and_weather_data[4],
+                                                 'cloudiness': city_and_weather_data[5],
+                                                 'population': city_and_weather_data[8],
+                                                 'localtime': city_and_weather_data[6],
+                                                 'humidity': city_and_weather_data[7]})
 
 
 def _get_name_city(request):
@@ -24,7 +33,6 @@ def _get_name_city(request):
 def _get_name_city_by_ip():
     url = 'http://ip-api.com/json/'
     response = requests.get(url).text
-    print(json.loads(response))
     city_name = json.loads(response)['city']
 
     return city_name
@@ -42,9 +50,11 @@ def _get_weather_data(city):
                            int(data["current"]["feelslike_c"]),
                            data["current"]["condition"]["text"],
                            int(data["current"]["wind_kph"] * (5 / 18)),
-                           data["current"]["cloud"]
+                           data["current"]["cloud"],
+                           datetime.strptime(data['location']['localtime'].split()[0], '%Y-%m-%d').date(),
+                           data['current']['humidity'],
+                           datetime.strptime(data['location']['localtime'].split()[1], '%H:%M').time()
                            ]
-
     return weather_information
 
 
@@ -57,14 +67,17 @@ def _get_city_population(city):
     return city_population
 
 
-def _edit_data_db(data):
+def _update_data_db(data):
     post = City.objects.get(city=data[0])
     post.temperature = data[1]
     post.temperature_feelslike = data[2]
     post.precipitation = data[3]
     post.wind = data[4]
     post.cloudiness = data[5]
-    post.population = data[6]
+    post.date = data[6]
+    post.humidity = data[7]
+    post.localtime = data[8]
+    post.population = data[9]
     post.save()
 
 
@@ -75,7 +88,10 @@ def _create_data_db(data):
                         precipitation=data[3],
                         wind=data[4],
                         cloudiness=data[5],
-                        population=data[6]
+                        date=data[6],
+                        humidity=data[7],
+                        localtime=data[8],
+                        population=data[9]
                         )
 
 
@@ -91,7 +107,7 @@ def _update_or_create_data_db(request):
     city_and_weather_data = _data_of_all_api(request)
 
     if City.objects.filter(city=city_and_weather_data[0]):
-        _edit_data_db(city_and_weather_data)  # Updating data in the database
+        _update_data_db(city_and_weather_data)  # Updating data in the database
     else:
         _create_data_db(city_and_weather_data)  # Creating data in the database
 
@@ -99,6 +115,8 @@ def _update_or_create_data_db(request):
 def get(request):  # API
     city = _get_name_city(request)
     city_name = _get_weather_data(city)[0]
+
+    _update_or_create_data_db(request)
 
     weather_data = City.objects.filter(city=city_name)
     weather_serialized_data = serialize('python', weather_data)
