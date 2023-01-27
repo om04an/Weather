@@ -17,9 +17,11 @@ def home(request):
                                                  'precipitation': city_and_weather_data[3],
                                                  'wind': city_and_weather_data[4],
                                                  'cloudiness': city_and_weather_data[5],
-                                                 'population': city_and_weather_data[8],
-                                                 'localtime': city_and_weather_data[6],
-                                                 'humidity': city_and_weather_data[7]})
+                                                 'date': city_and_weather_data[6],
+                                                 'humidity': city_and_weather_data[7],
+                                                 'localtime': city_and_weather_data[8],
+                                                 'population': city_and_weather_data[9]
+                                                 })
 
 
 def _get_name_city(request):
