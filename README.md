@@ -1,6 +1,8 @@
 # Weather website
 This is a weather site that provides all the necessary data about the current weather in the city, which can be selected using the search on the site.
 
+Stack: Django, Gunicorn, Nginx, PostgreSQL + SSL(HTTPS)
+
   *Site link:* **_( https://personal-weather.ru/ )_**
   
   *Site Preview:*
