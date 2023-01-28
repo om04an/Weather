@@ -1,7 +1,7 @@
 # Weather website
 This is a weather site that provides all the necessary data about the current weather in the city, which can be selected using the search on the site.
 
-  *Site link:* **_( http://127.0.0.1:8000 )_**
+  *Site link:* **_( https://personal-weather.ru/ )_**
   
   *Site Preview:*
 ![This image](https://github.com/om04an/Weather/blob/main/WM-Screenshots-20230127201941.png)
@@ -11,13 +11,13 @@ This site also provides api.
 
 Standard request:
 ```
-http://127.0.0.1:8000/api/
+https://personal-weather.ru/api/
 ```
 This query shows the weather in the city where it is located, which it specifies using ip.
 
 Request by specific city:
 ```
-http://127.0.0.1:8000/api/?city=Saint-Petersburg
+https://personal-weather.ru/api/?city=Saint-Petersburg
 ```
 
 #
