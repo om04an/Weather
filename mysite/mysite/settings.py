@@ -25,9 +25,9 @@ API_KEY = 'API_KEY'  # Weather API
 API_KEY_2 = 'API_KEY_2'  # City information API
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['personal-weather.ru', 'localhost']
 
 
 # Application definition
